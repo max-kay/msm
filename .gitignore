@@ -1,1 +1,18 @@
-build
+# Build outputs
+*.exe
+*.out
+*.o
+*.obj
+*.ilk
+*.pdb
+*.log
+
+# Folders
+build/
+bin/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
