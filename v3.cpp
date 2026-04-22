@@ -43,7 +43,3 @@ public:
         return v3(x, y, z);
     }
 };
-
-int main()
-{
-}
