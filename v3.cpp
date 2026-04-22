@@ -13,7 +13,7 @@ class v3 {
     // Vector-Scalar Operations
     v3 operator*(const double &num) {
         return v3(x * num, y * num, z * num);
-    }                               // Multiplication
+    } // Multiplication
     v3 operator/(const double &num) // Division
     {
         if (num == 0) {
@@ -44,10 +44,10 @@ class v3 {
     v3 get_direction() { return *this / (*this).get_length(); } // Normalize
     v3 operator%(const double &size) // Return to Central Probing Volume
     {
-            x -= std::round(x / size) * size;
-            y -= std::round(y / size) * size;
-            z -= std::round(z / size) * size;
+        x -= std::round(x / size) * size;
+        y -= std::round(y / size) * size;
+        z -= std::round(z / size) * size;
 
-        return v3(x,y,z);
+        return v3(x, y, z);
     }
 };
