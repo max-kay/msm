@@ -44,15 +44,9 @@ class v3 {
     v3 get_direction() { return *this / (*this).get_length(); } // Normalize
     v3 operator%(const double &size) // Return to Central Probing Volume
     {
-        if ((x < size / 2) || (x > size / 2)) {
             x -= std::round(x / size) * size;
-        }
-        if ((y < size / 2) || (y > size / 2)) {
             y -= std::round(y / size) * size;
-        }
-        if ((z < size / 2) || (z > size / 2)) {
             z -= std::round(z / size) * size;
-        }
 
         return v3(x,y,z);
     }
