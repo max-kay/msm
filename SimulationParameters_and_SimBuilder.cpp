@@ -8,7 +8,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-struct SimBuilder {
+class SimBuilder {
 
   private:
     SimulationParameters parameters;
