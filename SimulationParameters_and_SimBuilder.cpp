@@ -8,56 +8,149 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-class SimBuilder {
+struct SimulationParameters {
+  public:
+    // Simulation Relevant Parameters (once I am done at least)
+    double volumeParticle;
+    double dragRadius; // can kill
+    double dragCoeffTransl;
+    double dragCoeffRot;
+    double chiEffLongAxesAB;
+    double chiEffShortAxisC;
+    double chiEffShapeAnisotropyFactor; // can kill
+    double totalMagDipoleMomentParticle;
+    double lengthSimulationCube;
 
+    // Experiment Parameters
+    int numberOfParticles = 100;
+    double simulationTime = 1000; // ms
+    double volumeFraction = 0.01; // 1.0 = 100%
+    double viscosity = 3.5;       // Pa*s
+    double magnitudeMagFieldExternal = 0;
+    double magnitudeElFieldExternal = 0;
+
+    // Particle/Matrix Parameters
+    double magMomentDensityParticle = 0; // can kill
+    double aspectRatioParticle = 7 / 2;  // Width/Height
+    double longSemiaxesAB = 2.5;         // um
+    // double shortSemiaxisC;
+    //   v3 orientationParticle;
+    double relPermittivityParticle = 10; // can kill?
+    double relPermittivityMatrix = 2;    // can kill?
+
+    // Correction Factors
+    double corrFactorRepulsiveForce = 40;
+    double corrFactorVelocity = 1 / 3;
+
+    /*
+    void set_numberOfParticles(int val_numberOfParticles) {
+        numberOfParticles = val_numberOfParticles;
+    };
+    void set_simulationTime(double val_simulationTime) {
+        simulationTime = val_simulationTime;
+    };
+    void set_volumeFraction(double val_volumeFraction) {
+        volumeFraction = val_volumeFraction;
+    };
+    void set_viscosity(double val_viscosity) { viscosity = val_viscosity; };
+    void set_magnitudeMagFieldExternal(double val_magnitudeMagFieldExternal) {
+        magnitudeMagFieldExternal = val_magnitudeMagFieldExternal;
+    };
+    void set_magnitudeElFieldExternal(double val_magnitudeElFieldExternal) {
+        magnitudeElFieldExternal = val_magnitudeElFieldExternal;
+    };
+
+    void set_magMomentDensityParticle(double val_magMomentDensityParticle) {
+        magMomentDensityParticle = val_magMomentDensityParticle;
+    };
+    void set_aspectRatioParticle(double val_aspectRatioParticle) {
+        aspectRatioParticle = val_aspectRatioParticle;
+    };
+    void set_longSemiaxesAB(double val_longSemiaxesAB) {
+        longSemiaxesAB = val_longSemiaxesAB;
+    };
+    void set_relPermittivityParticle(double val_relPermittivityParticle) {
+        relPermittivityParticle = val_relPermittivityParticle;
+    };
+    void set_relPermittivityMatrix(double val_relPermittivityMatrix) {
+        relPermittivityMatrix = val_relPermittivityMatrix;
+    };
+
+    void set_corrFactorRepulsiveForce(double val_corrFactorRepulsiveForce) {
+        corrFactorRepulsiveForce = val_corrFactorRepulsiveForce;
+    };
+    void set_corrFactorVelocity(double val_corrFactorVelocity) {
+        corrFactorVelocity = val_corrFactorVelocity;
+    };
+    */
+};
+
+class SimBuilder {
   private:
     SimulationParameters parameters;
 
   public:
-    void set_numberOfParticles(int numberOfParticles) {
+    // SimBuilder () {parameters = SimulationParameters();};
+
+    SimBuilder &set_numParticles(int numberOfParticles) {
         parameters.numberOfParticles = numberOfParticles;
+        return *this;
     };
-    void set_simulationTime(double simulationTime) {
+    SimBuilder &set_duration(double simulationTime) {
         parameters.simulationTime = simulationTime;
+        return *this;
     };
-    void set_volumeFraction(double volumeFraction) {
+    SimBuilder &set_volFrac(double volumeFraction) {
         parameters.volumeFraction = volumeFraction;
+        return *this;
     };
-    void set_viscosity(double viscosity) { parameters.viscosity = viscosity; };
-    void set_magnitudeMagFieldExternal(double magnitudeMagFieldExternal) {
-        parameters.magnitudeMagFieldExternal = magnitudeMagFieldExternal;
+    SimBuilder &set_viscosity(double viscosity) {
+        parameters.viscosity = viscosity;
+        return *this;
     };
-    void set_magnitudeMagFieldExternal(double magnitudeMagFieldExternal) {
+    SimBuilder &set_magField(double magnitudeMagFieldExternal) {
         parameters.magnitudeMagFieldExternal = magnitudeMagFieldExternal;
+        return *this;
+    };
+    SimBuilder &set_elField(double magnitudeElFieldExternal) {
+        parameters.magnitudeElFieldExternal = magnitudeElFieldExternal;
+        return *this;
     };
 
-    void set_magMomentDensityParticle(double magMomentDensityParticle) {
+    SimBuilder &set_magMomentDensityParticle(double magMomentDensityParticle) {
         parameters.magMomentDensityParticle = magMomentDensityParticle;
+        return *this;
     };
-    void set_aspectRatioParticle(double aspectRatioParticle) {
+    SimBuilder &set_aspectRatio(double aspectRatioParticle) {
         parameters.aspectRatioParticle = aspectRatioParticle;
+        return *this;
     };
-    void set_longSemiaxesAB(double longSemiaxesAB) {
+    SimBuilder &set_longSemiaxesAB(double longSemiaxesAB) {
         parameters.longSemiaxesAB = longSemiaxesAB;
+        return *this;
     };
-    void set_relPermittivityParticle(double relPermittivityParticle) {
+    SimBuilder &set_relPermittivityParticle(double relPermittivityParticle) {
         parameters.relPermittivityParticle = relPermittivityParticle;
+        return *this;
     };
-    void set_relPermittivityMatrix(double relPermittivityMatrix) {
+    SimBuilder &set_relPermittivityMatrix(double relPermittivityMatrix) {
         parameters.relPermittivityMatrix = relPermittivityMatrix;
+        return *this;
     };
 
-    void set_corrFactorRepulsiveForce(double corrFactorRepulsiveForce) {
+    SimBuilder &set_corrFactorRepulsiveForce(double corrFactorRepulsiveForce) {
         parameters.corrFactorRepulsiveForce = corrFactorRepulsiveForce;
+        return *this;
     };
-    void set_corrFactorVelocity(double corrFactorVelocity) {
+    SimBuilder &set_corrFactorVelocity(double corrFactorVelocity) {
         parameters.corrFactorVelocity = corrFactorVelocity;
+        return *this;
     };
 
-    void build() {
+    SimulationParameters build() {
         double shortSemiaxisC =
             parameters.longSemiaxesAB / parameters.aspectRatioParticle;
-        parameters.volumeParticle = 4 / 3 * M_PI *
+        parameters.volumeParticle = 4.0 / 3.0 * M_PI *
                                     std::pow(parameters.longSemiaxesAB, 2) *
                                     shortSemiaxisC;
 
@@ -102,41 +195,25 @@ class SimBuilder {
             std::cbrt(parameters.numberOfParticles * parameters.volumeParticle /
                       parameters.volumeFraction);
 
-        return /*???!!!!!!???*/;
+        return parameters;
     }
 };
 
-struct SimulationParameters {
-  public:
-    // Simulation Relevant Parameters
-    double volumeParticle;
-    double dragRadius;
-    double dragCoeffTransl;
-    double dragCoeffRot;
-    double chiEffLongAxesAB;
-    double chiEffShortAxisC;
-    double chiEffShapeAnisotropyFactor;
-    double totalMagDipoleMomentParticle;
-    double lengthSimulationCube;
+/*
+int main() {
+    SimBuilder builder1;
+    builder1.set_aspectRatio(40);
+    SimulationParameters test1 = builder1.build();
 
-    // Experimental Parameters
-    int numberOfParticles = 100;
-    double simulationTime = 1000; // ms
-    double volumeFraction = 0.01; // 1.0 = 100%
-    double viscosity = 3.5;       // Pa*s
-    double magnitudeMagFieldExternal = 0;
-    double magnitudeElFieldExternal = 0;
+    SimBuilder builder2;
+    SimulationParameters test2 = builder2.build();
 
-    // Particle/Matrix Parameters
-    double magMomentDensityParticle = 0;
-    double aspectRatioParticle = 7 / 2; // Width/Height
-    double longSemiaxesAB = 2.5;        // um
-    // double shortSemiaxisC;
-    //   v3 orientationParticle;
-    double relPermittivityParticle = 10;
-    double relPermittivityMatrix = 2;
+    std::cout << test2.volumeParticle << std::endl;
+    std::cout << test1.volumeParticle << std::endl;
 
-    // Correction Factors
-    double corrFactorRepulsiveForce = 40;
-    double corrFactorVelocity = 1 / 3;
-};
+    builder1.set_longSemiaxesAB(5);
+    SimulationParameters test3 = builder1.build();
+
+    std::cout << test3.volumeParticle << std::endl;
+}
+*/
