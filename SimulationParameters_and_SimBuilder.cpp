@@ -1,6 +1,5 @@
 #include "v3.h"
 #include <cmath>
-#include <iostream>
 
 // Source - https://stackoverflow.com/a/1727896
 // Posted by Ferenc Deak, modified by community. See post 'Timeline' for change
@@ -26,13 +25,13 @@ struct SimulationParameters {
     double simulationTime = 1000; // ms
     double volumeFraction = 0.01; // 1.0 = 100%
     double viscosity = 3.5;       // Pa*s
-    double magnitudeMagFieldExternal = 0;
-    double magnitudeElFieldExternal = 0;
+    double magnitudeMagFieldExternal = 1900000;
+    double magnitudeElFieldExternal = 100e6;
 
     // Particle/Matrix Parameters
-    double magMomentDensityParticle = 0; // can kill
-    double aspectRatioParticle = 7 / 2;  // Width/Height
-    double longSemiaxesAB = 2.5;         // um
+    double magMomentDensityParticle = 380000; // can kill
+    double aspectRatioParticle = 7.0 / 2;     // Width/Height
+    double longSemiaxesAB = 2.5;              // um
     // double shortSemiaxisC;
     //   v3 orientationParticle;
     double relPermittivityParticle = 10; // can kill?
@@ -40,7 +39,7 @@ struct SimulationParameters {
 
     // Correction Factors
     double corrFactorRepulsiveForce = 40;
-    double corrFactorVelocity = 1 / 3;
+    double corrFactorVelocity = 1.0 / 3;
 
     /*
     void set_numberOfParticles(int val_numberOfParticles) {
