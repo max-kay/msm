@@ -198,21 +198,3 @@ class SimBuilder {
     }
 };
 
-/*
-int main() {
-    SimBuilder builder1;
-    builder1.set_aspectRatio(40);
-    SimulationParameters test1 = builder1.build();
-
-    SimBuilder builder2;
-    SimulationParameters test2 = builder2.build();
-
-    std::cout << test2.volumeParticle << std::endl;
-    std::cout << test1.volumeParticle << std::endl;
-
-    builder1.set_longSemiaxesAB(5);
-    SimulationParameters test3 = builder1.build();
-
-    std::cout << test3.volumeParticle << std::endl;
-}
-*/
