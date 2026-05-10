@@ -1,6 +1,5 @@
 #include "v3.h"
 #include <cmath>
-
 // Source - https://stackoverflow.com/a/1727896
 // Posted by Ferenc Deak, modified by community. See post 'Timeline' for change
 // history Retrieved 2026-05-02, License - CC BY-SA 3.0
@@ -198,21 +197,10 @@ class SimBuilder {
     }
 };
 
-/*
-int main() {
-    SimBuilder builder1;
-    builder1.set_aspectRatio(40);
-    SimulationParameters test1 = builder1.build();
 
-    SimBuilder builder2;
-    SimulationParameters test2 = builder2.build();
+//int main() {
+//    SimBuilder builder1;
+//    builder1.set_aspectRatio(40);
+//    SimulationParameters test1 = builder1.build();
+//}
 
-    std::cout << test2.volumeParticle << std::endl;
-    std::cout << test1.volumeParticle << std::endl;
-
-    builder1.set_longSemiaxesAB(5);
-    SimulationParameters test3 = builder1.build();
-
-    std::cout << test3.volumeParticle << std::endl;
-}
-*/

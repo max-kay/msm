@@ -12,7 +12,7 @@
                 "${file}"
             ],
             "options": {
-                "cwd": "${fileDirname}\\build"
+                "cwd": "${fileDirname}"
             },
             "problemMatcher": [
                 "$msCompile"
