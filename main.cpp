@@ -1,7 +1,7 @@
 #include "builder.cpp"
 #include <iostream>
 #include <vector>
-#define EPSILON_0 (double) 8.8541878188e-12
+#define EPSILON_0 (double)8.8541878188e-12
 using namespace std;
 
 // corrFactorVelocity
@@ -43,10 +43,8 @@ class Sim {
     }
 
     void update_e_field() {
-        double prefactor =
-            1 /
-            (4 * M_PI *
-             params.relPermittivityParticle*EPSILON_0); // NO DIELECTRIC CONST. epslion_0
+        double prefactor = 1 / (4 * M_PI * params.relPermittivityParticle *
+                                EPSILON_0); // NO DIELECTRIC CONST. epslion_0
 
         for (int i = 0; i < params.numberOfParticles; i++) {
             // these are here to calculate the distance from our i-th
@@ -69,8 +67,29 @@ class Sim {
             particle_e_field[i] = this_e_field; // update the list
         }
     }
-    void update_h_field() {
-        // TODO
+    void update_h_field() {// check math pls otherwise analogous to update_e_field function  
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            v3 this_h_field = v3(0, 0, 0);
+            double prefactor = params.magMomentDensityParticle *
+                               params.volumeParticle / (4 * M_PI);
+            for (int j = 0; j < params.numberOfParticles; i++) {
+                if (j == i) {
+                    continue;
+                }
+                v3 r_ji_h = (particle_pos[i] - particle_pos[j]) %
+                            params.lengthSimulationCube;
+                v3 r_ji_h_hat = r_ji_h.get_direction();
+                this_h_field = this_h_field +
+                               prefactor * (1 / pow(r_ji_h.get_length(), 3)) *
+                                   (3*(particle_h_field[j].dot(r_ji_h_hat))*r_ji_h_hat -
+                                    particle_h_field[j]);
+
+            }
+            particle_h_field[i] = this_h_field;
+        } 
+    }
+    void update_el_dipole(){
+        //TODO
     }
 };
 
