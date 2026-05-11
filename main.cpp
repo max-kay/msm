@@ -49,32 +49,23 @@ class Sim {
             1 /
             (4 * M_PI *
              params.relPermittivityParticle); // NO DIELECTRIC CONST. epslion_0
-                                              // bc we are not using it right?
-        for (int i = 0; params.numberOfParticles; i++) {
-            vector<v3> dist_to_particle_i;
-            for (int j = 0; params.numberOfParticles; i++) {
-                dist_to_particle_i[j] =
-                    particle_pos[i] -
-                    particle_pos[j]; // richtig herum? fine with periodic bc?
-                // these are here to calculate the distance from our i-th
-                // particle to the j-th particle
 
-                vector<v3> e_field_change_of_i;
-                for (int k = 0; params.numberOfParticles; i++) {
-                    if (k != i) { // dont devide by 0
-                        e_field_change_of_i[k] =
-                            prefactor /
-                            (pow(dist_to_particle_i[k].get_length(),
-                                 3)) *
-                            3 *
-                            ((particle_e_dipol[j].dot(
-                                  dist_to_particle_i[k].get_direction()))
-                                 .dot(dist_to_particle_i[k].get_direction()) -
-                             particle_e_dipol[k]); // wrong implematation of dot
-                                                   // functio idk how to use
-                                                   // correctly
-                    }
-                }
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            // these are here to calculate the distance from our i-th
+            // particle to the j-th particle
+            v3 this_e_field = v3(0, 0, 0);
+            for (int j = 0; j < params.numberOfParticles; j++) {
+                if (j == i) {
+                    continue;
+                } // dont devide by 0
+                v3 r_ji = particle_pos[i] - particle_pos[j];
+                v3 r_ji_hat = r_ji.get_direction();
+                this_e_field =
+                    this_e_field +
+                    (prefactor / (pow(r_ji.get_length(), 3))) *
+                        (3.0 *
+                             (r_ji_hat * (particle_e_dipol[j].dot(r_ji_hat))) -
+                         particle_e_dipol[j]);
             }
         }
     }

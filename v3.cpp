@@ -50,4 +50,9 @@ class v3 {
 
         return v3(x, y, z);
     }
+    
 };
+// Commutative Multiplication
+v3 operator*(const double &num, const v3 &vec) {
+    return v3(vec.x * num, vec.y * num, vec.z * num);
+}
