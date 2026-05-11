@@ -30,9 +30,9 @@ class v3 {
         return v3(x - vector.x, y - vector.y, z - vector.z);
     } // Subtraction
 
-    //double operator*(const v3 &vector) {
-    //    return double(x * vector.x + y * vector.y + z * vector.z);
-    //} // Scalar Product
+    // double operator*(const v3 &vector) {
+    //     return double(x * vector.x + y * vector.y + z * vector.z);
+    // } // Scalar Product
     double dot(const v3 &vector) {
         return double(x * vector.x + y * vector.y + z * vector.z);
     } // Scalar Product
@@ -50,7 +50,6 @@ class v3 {
 
         return v3(x, y, z);
     }
-    
 };
 // Commutative Multiplication
 v3 operator*(const double &num, const v3 &vec) {

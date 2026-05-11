@@ -12,6 +12,8 @@
 build/
 bin/
 
+main
+
 # VS Code
 .vscode/
 
