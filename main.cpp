@@ -54,7 +54,8 @@ class Sim {
             vector<v3> dist_to_particle_i;
             for (int j = 0; params.numberOfParticles; i++) {
                 dist_to_particle_i[j] =
-                    particle_pos[i] - particle_pos[j]; // richtig herum? fine with periodic bc?
+                    particle_pos[i] -
+                    particle_pos[j]; // richtig herum? fine with periodic bc?
                 // these are here to calculate the distance from our i-th
                 // particle to the j-th particle
 
@@ -69,7 +70,10 @@ class Sim {
                             ((particle_e_dipol[j].dot(
                                   dist_to_particle_i[k].get_direction()))
                                  .dot(dist_to_particle_i[k].get_direction()) -
-                             particle_e_dipol[k]); // wrong implematation of dot functio idk how to use correctly
+                             particle_e_dipol[k]); // wrong implematation of dot
+                                                   // functio idk how to use
+                                                   // correctly
+                    }
                 }
             }
         }
