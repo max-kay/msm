@@ -1,14 +1,14 @@
 #include "builder.cpp"
 #include <iostream>
 #include <vector>
+#define EPSILON_0 (double) 8.8541878188e-12
 using namespace std;
 
 // corrFactorVelocity
 class Sim {
   public:
     SimulationParameters params;
-    vector<v3>
-        particle_e_field; // platz wird reserviert mit einem typ -- einzonen
+    vector<v3> particle_e_field;
     vector<v3> particle_e_dipol;
     vector<v3> particle_h_field;
     vector<v3> particle_pos;
@@ -42,12 +42,11 @@ class Sim {
         }
     }
 
-    void update_e_field() { // funktion ohne stützräder (max) geschrieben -->
-                            // überprüfen SEHR nötig
+    void update_e_field() {
         double prefactor =
             1 /
             (4 * M_PI *
-             params.relPermittivityParticle); // NO DIELECTRIC CONST. epslion_0
+             params.relPermittivityParticle*EPSILON_0); // NO DIELECTRIC CONST. epslion_0
 
         for (int i = 0; i < params.numberOfParticles; i++) {
             // these are here to calculate the distance from our i-th
@@ -57,16 +56,21 @@ class Sim {
                 if (j == i) {
                     continue;
                 } // dont devide by 0
-                v3 r_ji = particle_pos[i] - particle_pos[j];
+                v3 r_ji = (particle_pos[i] - particle_pos[j]) %
+                          params.lengthSimulationCube; // distance with PBC
                 v3 r_ji_hat = r_ji.get_direction();
-                this_e_field =
+                this_e_field = // calculate the electric field of the particle
                     this_e_field +
                     (prefactor / (pow(r_ji.get_length(), 3))) *
                         (3.0 *
                              (r_ji_hat * (particle_e_dipol[j].dot(r_ji_hat))) -
                          particle_e_dipol[j]);
             }
+            particle_e_field[i] = this_e_field; // update the list
         }
+    }
+    void update_h_field() {
+        // TODO
     }
 };
 
