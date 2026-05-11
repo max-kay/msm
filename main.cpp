@@ -42,7 +42,7 @@ class Sim {
                 params.lengthSimulationCube;
         }
     }
-    /*
+
     void update_e_field() { // funktion ohne stützräder (max) geschrieben -->
                             // überprüfen SEHR nötig
         double prefactor =
@@ -54,22 +54,26 @@ class Sim {
             vector<v3> dist_to_particle_i;
             for (int j = 0; params.numberOfParticles; i++) {
                 dist_to_particle_i[j] =
-                    particle_pos[i] - particle_pos[j]; // richtig herum?
-            } // these are here to calculate the distance from our i-th particle
-              // to the j-th particle
+                    particle_pos[i] - particle_pos[j]; // richtig herum? fine with periodic bc?
+                // these are here to calculate the distance from our i-th
+                // particle to the j-th particle
 
-            vector<v3> e_field_change_of_i;
-            for (int k = 0; params.numberOfParticles; i++) {
-                if (k != i) { // dont devide by 0
-                    e_field_change_of_i[k] =
-                        prefactor * 1 /
-                        (pow(dist_to_particle_i[k].get_length(),
-                             3)); // not done needs to be discussed, error? time for bed
+                vector<v3> e_field_change_of_i;
+                for (int k = 0; params.numberOfParticles; i++) {
+                    if (k != i) { // dont devide by 0
+                        e_field_change_of_i[k] =
+                            prefactor /
+                            (pow(dist_to_particle_i[k].get_length(),
+                                 3)) *
+                            3 *
+                            ((particle_e_dipol[j].dot(
+                                  dist_to_particle_i[k].get_direction()))
+                                 .dot(dist_to_particle_i[k].get_direction()) -
+                             particle_e_dipol[k]); // wrong implematation of dot functio idk how to use correctly
                 }
             }
         }
     }
-        */
 };
 
 int main() {
