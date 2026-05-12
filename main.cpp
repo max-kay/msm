@@ -71,6 +71,9 @@ class Sim {
             v3 this_e_force = v3(0, 0, 0);
             v3 this_r_force = v3(0, 0, 0);
             for (int j = 0; i < params.numberOfParticles; i++) {
+                if (j == i) {
+                    continue;
+                }
                 v3 r_ji = (particle_pos[i] - particle_pos[j]) %
                           params.lengthSimulationCube; // distance with PBC
                 v3 r_ji_hat = r_ji.get_direction();
@@ -85,10 +88,28 @@ class Sim {
                           particle_direction[j]) +
                          (r_ji_hat.dot(particle_direction[j]) *
                           particle_direction[i]));
-                this_e_force = this_e_force+ 1; //todo
-            }
-        }
-    }
+                this_e_force =
+                    this_e_force +
+                    e_prefactor / pow(r_ji.get_length(), 4) *
+                        ((((particle_e_dipol[j].dot(particle_e_dipol[i])) -
+                           5 * (r_ji_hat.dot(particle_e_dipol[j])) *
+                               (r_ji_hat.dot(particle_e_dipol[i]))) *
+                          r_ji_hat) +
+                         (((r_ji_hat.dot(particle_e_dipol[i])) *
+                           particle_e_dipol[j]) +
+                          (r_ji_hat.dot(particle_e_dipol[j])) *
+                              particle_e_dipol[i]));
+                this_r_force =
+                    this_r_force +
+                    r_prefactor *
+                        exp(-params.corrFactorRepulsiveForce *
+                            ((r_ji.get_length() / 2 * R_radius) - 1)) *
+                        r_ji_hat;
+            } // second for
+            particle_velocity[i] = 1 / params.dragCoeffTransl *
+                                   (this_e_force + this_h_force + this_r_force);//not adding to it is correcft right?
+        } // first for
+    } // entire func
 
     void update_direc_velocity() {
         // todo
