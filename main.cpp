@@ -106,8 +106,10 @@ class Sim {
                             ((r_ji.get_length() / 2 * R_radius) - 1)) *
                         r_ji_hat;
             } // second for
-            particle_velocity[i] = 1 / params.dragCoeffTransl *
-                                   (this_e_force + this_h_force + this_r_force);//not adding to it is correcft right?
+            particle_velocity[i] =
+                1 / params.dragCoeffTransl *
+                (this_e_force + this_h_force +
+                 this_r_force); // not adding to it is correcft right?
         } // first for
     } // entire func
 
