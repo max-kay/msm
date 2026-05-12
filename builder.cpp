@@ -39,48 +39,6 @@ struct SimulationParameters {
     // Correction Factors
     double corrFactorRepulsiveForce = 40;
     double corrFactorVelocity = 1.0 / 3;
-
-    /*
-    void set_numberOfParticles(int val_numberOfParticles) {
-        numberOfParticles = val_numberOfParticles;
-    };
-    void set_simulationTime(double val_simulationTime) {
-        simulationTime = val_simulationTime;
-    };
-    void set_volumeFraction(double val_volumeFraction) {
-        volumeFraction = val_volumeFraction;
-    };
-    void set_viscosity(double val_viscosity) { viscosity = val_viscosity; };
-    void set_magnitudeMagFieldExternal(double val_magnitudeMagFieldExternal) {
-        magnitudeMagFieldExternal = val_magnitudeMagFieldExternal;
-    };
-    void set_magnitudeElFieldExternal(double val_magnitudeElFieldExternal) {
-        magnitudeElFieldExternal = val_magnitudeElFieldExternal;
-    };
-
-    void set_magMomentDensityParticle(double val_magMomentDensityParticle) {
-        magMomentDensityParticle = val_magMomentDensityParticle;
-    };
-    void set_aspectRatioParticle(double val_aspectRatioParticle) {
-        aspectRatioParticle = val_aspectRatioParticle;
-    };
-    void set_longSemiaxesAB(double val_longSemiaxesAB) {
-        longSemiaxesAB = val_longSemiaxesAB;
-    };
-    void set_relPermittivityParticle(double val_relPermittivityParticle) {
-        relPermittivityParticle = val_relPermittivityParticle;
-    };
-    void set_relPermittivityMatrix(double val_relPermittivityMatrix) {
-        relPermittivityMatrix = val_relPermittivityMatrix;
-    };
-
-    void set_corrFactorRepulsiveForce(double val_corrFactorRepulsiveForce) {
-        corrFactorRepulsiveForce = val_corrFactorRepulsiveForce;
-    };
-    void set_corrFactorVelocity(double val_corrFactorVelocity) {
-        corrFactorVelocity = val_corrFactorVelocity;
-    };
-    */
 };
 
 class SimBuilder {
@@ -196,11 +154,4 @@ class SimBuilder {
         return parameters;
     }
 };
-
-
-//int main() {
-//    SimBuilder builder1;
-//    builder1.set_aspectRatio(40);
-//    SimulationParameters test1 = builder1.build();
-//}
 
