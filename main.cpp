@@ -1,6 +1,9 @@
 #include "builder.cpp"
 #include <chrono>
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
+#include <random>
 #include <vector>
 
 #define EL_CONVERGE_ITERATIONS 4
@@ -11,6 +14,7 @@ using namespace std;
 
 class Sim {
   public:
+    mt19937 rng;
     SimulationParameters params;
     vector<v3> particle_e_field;
     vector<v3> particle_e_dipol;
@@ -21,6 +25,7 @@ class Sim {
     vector<v3> particle_direction_velocity;
 
     Sim(SimulationParameters params) : params(params) {
+        generate_positions();
         // TODO:
         // Generate random position in the simulation cube, make sure they dont
         //   overlap using eqRadius.
@@ -28,6 +33,34 @@ class Sim {
         // Set the fields to their default values.
         // update the electric dipole once
         // fill both velocities with 0 vectors
+    }
+    void generate_positions() {
+        srand(time(nullptr)); // seed the generator otherwise
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            double rng_1 = (double)rand() / RAND_MAX; // random 0 to 1
+            double rng_2 = (double)rand() / RAND_MAX;
+            double rng_3 = (double)rand() / RAND_MAX;
+
+            particle_pos[i] = v3(rng_1 * params.lengthSimulationCube,
+                                 rng_2 * params.lengthSimulationCube,
+                                 rng_3 * params.lengthSimulationCube);
+            for (int j = 0; j < i; j++) {//while loop?
+                if (j == i) {
+                    continue;
+                }
+                double r_ji = (particle_pos[j] - particle_pos[i]).get_length();
+                if (r_ji < params.eqRadius) {
+                    double rng_1 = (double)rand() / RAND_MAX; // random 0 to 1
+                    double rng_2 = (double)rand() / RAND_MAX;
+                    double rng_3 = (double)rand() / RAND_MAX;
+                    particle_pos[i] = v3(rng_1 * params.lengthSimulationCube,
+                                         rng_2 * params.lengthSimulationCube,
+                                         rng_3 * params.lengthSimulationCube);
+                    j = -1; // reset the for loop bc we need to check all the
+                            // values again if we change them
+                }
+            }
+        }
     }
 
     void update_h_field() {
@@ -172,8 +205,8 @@ class Sim {
                 max_value = norm_velocity;
             }
         }
-        double delta_t =
-            params.corrFactorVelocity * params.eqRadius / max_value;
+        double delta_t = params.corrFactorVelocity * params.eqRadius /
+                         max_value; // potential problems with 0 x x
 
         return delta_t;
     };
