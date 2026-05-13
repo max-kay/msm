@@ -1,13 +1,14 @@
 #include "builder.cpp"
+#include <chrono>
 #include <iostream>
 #include <vector>
 
+#define EL_CONVERGE_ITERATIONS 4
 #define EPSILON_0 (double)8.8541878188e-12
 #define MU_0 (double)1.25663706127e-6
 
 using namespace std;
 
-// corrFactorVelocity
 class Sim {
   public:
     SimulationParameters params;
@@ -20,11 +21,16 @@ class Sim {
     vector<v3> particle_direction_velocity;
 
     Sim(SimulationParameters params) : params(params) {
-        // todo
+        // TODO:
+        // Generate random position in the simulation cube, make sure they dont
+        //   overlap using eqRadius.
+        // Generate random unit vectors for the direction.
+        // Set the fields to their default values.
+        // update the electric dipole once
+        // fill both velocities with 0 vectors
     }
 
-    void update_h_field() { // check math pls otherwise analogous to
-                            // update_e_field function
+    void update_h_field() {
         for (int i = 0; i < params.numberOfParticles; i++) {
             v3 this_h_field = v3(0, 0, 0);
             double prefactor = params.totalMagDipoleMomentParticle / (4 * M_PI);
@@ -187,9 +193,48 @@ class Sim {
                                         .get_direction();
         }
     }
+
+    // returns the delta t used for the function
+    double take_step() {
+        for (int i = 0; i < EL_CONVERGE_ITERATIONS; i++) {
+            update_e_field();
+            update_e_dipole();
+        }
+        update_h_field();
+
+        update_direc_velocity();
+        update_pos_velocity();
+
+        double delta_t = find_delta_t();
+
+        update_direction(delta_t);
+        update_position(delta_t);
+        return delta_t;
+    }
+
+    void run_simulation() {
+        double current_time = 0.0;
+        while (current_time < params.simulationTime) {
+            current_time += take_step();
+        }
+    }
 };
 
 int main() {
-    std::cout << "Hello World" << std::endl;
+    SimBuilder builder;
+    SimulationParameters params = builder.build();
+
+    Sim simulation(params);
+    std::cout << "Starting simulation..." << std::endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    simulation.run_simulation();
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> diff = end - start;
+
+    std::cout << "Simulation finished." << std::endl;
+    std::cout << "Time taken: " << diff.count() << " seconds" << std::endl;
+
     return 0;
 }

@@ -1,5 +1,10 @@
 #include <cmath>
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
 #include <iostream>
+#include <vector>
+#include <string>
 using namespace std;
 
 class v3 {
@@ -51,4 +56,78 @@ class v3 {
 // Commutative Multiplication
 v3 operator*(const double &num, const v3 &vec) {
     return v3(vec.x * num, vec.y * num, vec.z * num);
+}
+
+int write_numpy_file(const std::vector<v3> &buf, const std::string &path) {
+    size_t len = buf.size();
+    FILE *f = fopen(path.c_str(), "wb");
+    if (!f)
+        return -1;
+
+    /* Build header dict string */
+    char dict[256];
+    int dict_len = snprintf(
+        dict, sizeof(dict),
+        "{'descr': '<f8', 'fortran_order': False, 'shape': (%zu, 3), }", len);
+    if (dict_len < 0 || dict_len >= (int)sizeof(dict)) {
+        fclose(f);
+        return -1;
+    }
+
+    /*
+     * Total = 10 (magic + version + header_len u16) + HEADER_LEN
+     * HEADER_LEN must make the total a multiple of 64.
+     * The header ends with '\n'; everything before is space-padded.
+     */
+    const int PREAMBLE = 12;
+    int total_unpadded = PREAMBLE + dict_len + 1; /* +1 for '\n' */
+    int remainder = total_unpadded % 64;
+    int padding = (remainder == 0) ? 0 : (64 - remainder);
+    int header_len = dict_len + padding + 1; /* dict + spaces + newline */
+
+    if (header_len > 65535) {
+        fclose(f);
+        return -1;
+    }
+
+    uint32_t hlen_le = (uint32_t)header_len;
+    /* Write magic + version */
+    if (fwrite("\x93NUMPY\x02\x00", 1, 8, f) != 8)
+        goto err;
+
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+    hlen_le = __builtin_bswap32(hlen_le);
+#endif
+    if (fwrite(&hlen_le, 4, 1, f) != 1) /* 4 bytes, not 2 */
+        goto err;
+
+    /* Write dict, space padding, newline */
+    if (fwrite(dict, 1, (size_t)dict_len, f) != (size_t)dict_len)
+        goto err;
+    for (int i = 0; i < padding; i++)
+        if (fputc(' ', f) == EOF)
+            goto err;
+    if (fputc('\n', f) == EOF)
+        goto err;
+
+    for (size_t i = 0; i < len; i++) {
+        double xyz[3] = {buf[i].x, buf[i].y, buf[i].z};
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+        for (int j = 0; j < 3; j++) {
+            uint64_t tmp;
+            memcpy(&tmp, &xyz[j], 8);
+            tmp = __builtin_bswap64(tmp);
+            memcpy(&xyz[j], &tmp, 8);
+        }
+#endif
+        if (fwrite(xyz, 8, 3, f) != 3)
+            goto err;
+    }
+
+    fclose(f);
+    return 0;
+
+err:
+    fclose(f);
+    return -1;
 }
