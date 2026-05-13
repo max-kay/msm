@@ -22,7 +22,7 @@ class Sim {
     }
 
     double find_delta_t() {
-        double max_value = 0;
+        double max_value = 0.0;
         for (auto elem : particle_velocity) {
             double norm_velocity = elem.get_length();
 
@@ -114,12 +114,29 @@ class Sim {
     } // entire func
 
     void update_direc_velocity() {
-        // todo
-    }
+        double h_prefactor =
+            MY_0 * params.magMomentDensityParticle * params.volumeParticle;
+        double e_prefactor =
+            params.volumeParticle * EPSILON_0 *
+            (params.chiEffShortAxisC - params.chiEffLongAxesAB);
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            v3 h_cross_d = h_prefactor *
+                           (particle_h_field[i] -
+                            (particle_direction[i] *
+                             (particle_h_field[i].dot(particle_direction[i]))));
+            v3 e_cross_d = e_prefactor *
+                           (particle_direction[i].dot(particle_e_field[i])) *
+                           (particle_e_field[i] -
+                            (particle_direction[i] *
+                             (particle_e_field[i].dot(particle_direction[i]))));
+            particle_direction_velocity[i] =
+                1 / params.dragCoeffRot * (h_cross_d + e_cross_d);
+        } // for loop
+    } // entire func
 
     void update_e_field() {
-        double prefactor = 1 / (4 * M_PI * params.relPermittivityMatrix *
-                                EPSILON_0); // NO DIELECTRIC CONST. epslion_0
+        double prefactor =
+            1 / (4 * M_PI * params.relPermittivityMatrix * EPSILON_0);
 
         for (int i = 0; i < params.numberOfParticles; i++) {
             // these are here to calculate the distance from our i-th
