@@ -10,7 +10,7 @@ struct SimulationParameters {
   public:
     // Simulation Relevant Parameters (once I am done at least)
     double volumeParticle;
-    double dragRadius; // can kill
+    double eqRadius;
     double dragCoeffTransl;
     double dragCoeffRot;
     double chiEffLongAxesAB;
@@ -110,23 +110,26 @@ class SimBuilder {
                                     std::pow(parameters.longSemiaxesAB, 2) *
                                     shortSemiaxisC;
 
-        parameters.dragRadius =
+        parameters.eqRadius =
             std::cbrt(std::pow(parameters.longSemiaxesAB, 2) * shortSemiaxisC);
 
         parameters.dragCoeffTransl =
-            6 * M_PI * parameters.viscosity * parameters.dragRadius;
+            6 * M_PI * parameters.viscosity * parameters.eqRadius;
 
-        parameters.dragCoeffRot = 8 * M_PI * parameters.viscosity *
-                                  std::pow(parameters.dragRadius, 3);
+        parameters.dragCoeffRot =
+            8 * M_PI * parameters.viscosity * std::pow(parameters.eqRadius, 3);
 
+        double prefactor = std::pow(parameters.longSemiaxesAB, 2) *
+                           shortSemiaxisC /
+                           (2.0 * (std::pow(parameters.longSemiaxesAB, 2) -
+                                   std::pow(shortSemiaxisC, 2)));
+        double summand =
+            M_PI / (2.0 * sqrt(std::pow(parameters.longSemiaxesAB, 2) -
+                               std::pow(shortSemiaxisC, 2)));
+        double minuend =
+            shortSemiaxisC / std::pow(parameters.longSemiaxesAB, 2);
         parameters.chiEffShapeAnisotropyFactor =
-            (std::pow(parameters.longSemiaxesAB, 2) * shortSemiaxisC) /
-            (2 * (std::pow(parameters.longSemiaxesAB, 2) -
-                  std::pow(shortSemiaxisC, 2))) *
-            ((M_PI / 2 *
-              std::sqrt(std::pow(parameters.longSemiaxesAB, 2) -
-                        std::pow(shortSemiaxisC, 2))) -
-             shortSemiaxisC / std::pow(parameters.longSemiaxesAB, 2));
+            prefactor * (summand - minuend);
 
         parameters.chiEffLongAxesAB =
             (parameters.relPermittivityParticle -
@@ -154,4 +157,3 @@ class SimBuilder {
         return parameters;
     }
 };
-

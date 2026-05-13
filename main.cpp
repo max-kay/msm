@@ -1,8 +1,10 @@
 #include "builder.cpp"
 #include <iostream>
 #include <vector>
+
 #define EPSILON_0 (double)8.8541878188e-12
-#define MY_0 (double)1.25663706127e-6
+#define MU_0 (double)1.25663706127e-6
+
 using namespace std;
 
 // corrFactorVelocity
@@ -25,9 +27,8 @@ class Sim {
                             // update_e_field function
         for (int i = 0; i < params.numberOfParticles; i++) {
             v3 this_h_field = v3(0, 0, 0);
-            double prefactor = params.magMomentDensityParticle *
-                               params.volumeParticle / (4 * M_PI);
-            for (int j = 0; j < params.numberOfParticles; i++) {
+            double prefactor = params.totalMagDipoleMomentParticle / (4 * M_PI);
+            for (int j = 0; j < params.numberOfParticles; j++) {
                 if (j == i) {
                     continue;
                 }
@@ -61,9 +62,9 @@ class Sim {
                 this_e_field =
                     this_e_field +
                     (prefactor / (pow(r_ji.get_length(), 3))) *
-                        (3.0 * (r_ji_hat *
-                                (particle_direction[j].dot(r_ji_hat))) -
-                         particle_direction[j]);
+                        (3.0 *
+                             (r_ji_hat * (particle_e_dipol[j].dot(r_ji_hat))) -
+                         particle_e_dipol[j]);
             }
             particle_e_field[i] = this_e_field; // update the list
         }
@@ -82,23 +83,18 @@ class Sim {
     }
 
     void update_pos_velocity() {
-        double R_radius =
-            cbrt(pow(params.longSemiaxesAB, 2) * params.chiEffShortAxisC);
         double h_prefactor =
-            3 * MY_0 *
-            pow(params.magMomentDensityParticle * params.volumeParticle, 2) /
-            (4 + M_PI);
+            3 * MU_0 * pow(params.totalMagDipoleMomentParticle, 2) / (4 * M_PI);
         double e_prefactor =
             3 / (EPSILON_0 * params.relPermittivityMatrix * 2 * M_PI);
-        double r_prefactor =
-            3 * MY_0 *
-            pow(params.magMomentDensityParticle * params.volumeParticle, 2) /
-            (2 * M_PI * pow(2 * R_radius, 4));
+        double r_prefactor = 3 * MU_0 *
+                             pow(params.totalMagDipoleMomentParticle, 2) /
+                             (2 * M_PI * pow(2 * params.eqRadius, 4));
         for (int i = 0; i < params.numberOfParticles; i++) {
             v3 this_h_force = v3(0, 0, 0);
             v3 this_e_force = v3(0, 0, 0);
             v3 this_r_force = v3(0, 0, 0);
-            for (int j = 0; i < params.numberOfParticles; i++) {
+            for (int j = 0; j < params.numberOfParticles; j++) {
                 if (j == i) {
                     continue;
                 }
@@ -133,19 +129,16 @@ class Sim {
                     this_r_force +
                     r_prefactor *
                         exp(-params.corrFactorRepulsiveForce *
-                            ((r_ji.get_length() / 2 * R_radius) - 1)) *
+                            ((r_ji.get_length() / (2 * params.eqRadius)) - 1)) *
                         r_ji_hat;
             }
-            particle_velocity[i] =
-                1 / params.dragCoeffTransl *
-                (this_e_force + this_h_force +
-                 this_r_force); // not adding to it is correcft right?
+            particle_velocity[i] = 1 / params.dragCoeffTransl *
+                                   (this_e_force + this_h_force + this_r_force);
         }
     }
 
     void update_direc_velocity() {
-        double h_prefactor =
-            MY_0 * params.magMomentDensityParticle * params.volumeParticle;
+        double h_prefactor = MU_0 * params.totalMagDipoleMomentParticle;
         double e_prefactor =
             params.volumeParticle * EPSILON_0 *
             (params.chiEffShortAxisC - params.chiEffLongAxesAB);
@@ -174,7 +167,7 @@ class Sim {
             }
         }
         double delta_t =
-            params.corrFactorVelocity * params.dragRadius / max_value;
+            params.corrFactorVelocity * params.eqRadius / max_value;
 
         return delta_t;
     };
@@ -189,11 +182,9 @@ class Sim {
 
     void update_direction(double delta_t) {
         for (int i = 0; i < params.numberOfParticles; i++) {
-            particle_direction[i] =
-                particle_direction[i] +
-                delta_t *
-                    particle_direction_velocity[i]; // periodic BC are not
-                                                    // required here right?
+            particle_direction[i] = (particle_direction[i] +
+                                     delta_t * particle_direction_velocity[i])
+                                        .get_direction();
         }
     }
 };
