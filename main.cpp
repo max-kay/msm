@@ -28,31 +28,32 @@ class Sim {
         generate_positions();
         // TODO:
         // Generate random position in the simulation cube, make sure they dont
-        //   overlap using eqRadius.
-        // Generate random unit vectors for the direction.
-        // Set the fields to their default values.
-        // update the electric dipole once
-        // fill both velocities with 0 vectors
+        // overlap using eqRadius. -- DONE
+        // Generate random unit vectors for the direction. -- DONE
+        // Set the fields to their default values. -- H is done E needs updates
+        // from aurel
+        // update the electric dipole once fill both velocities with
+        // 0 vectors -- DONE
     }
     void generate_positions() {
-        srand(time(nullptr)); // seed the generator otherwise
+        srand(time(nullptr)); // seed the generator
         for (int i = 0; i < params.numberOfParticles; i++) {
-            double rng_1 = (double)rand() / RAND_MAX; // random 0 to 1
-            double rng_2 = (double)rand() / RAND_MAX;
-            double rng_3 = (double)rand() / RAND_MAX;
+            double rng_1 = (double)rand() / RAND_MAX - 0.5;
+            double rng_2 = (double)rand() / RAND_MAX - 0.5;
+            double rng_3 = (double)rand() / RAND_MAX - 0.5;
 
-            particle_pos[i] = v3(rng_1 * params.lengthSimulationCube,
-                                 rng_2 * params.lengthSimulationCube,
-                                 rng_3 * params.lengthSimulationCube);
-            for (int j = 0; j < i; j++) {//while loop?
+            particle_pos.push_back(v3(rng_1 * params.lengthSimulationCube,
+                                      rng_2 * params.lengthSimulationCube,
+                                      rng_3 * params.lengthSimulationCube));
+            for (int j = 0; j < i; j++) {
                 if (j == i) {
                     continue;
                 }
                 double r_ji = (particle_pos[j] - particle_pos[i]).get_length();
                 if (r_ji < params.eqRadius) {
-                    double rng_1 = (double)rand() / RAND_MAX; // random 0 to 1
-                    double rng_2 = (double)rand() / RAND_MAX;
-                    double rng_3 = (double)rand() / RAND_MAX;
+                    double rng_1 = (double)rand() / RAND_MAX - 0.5;
+                    double rng_2 = (double)rand() / RAND_MAX - 0.5;
+                    double rng_3 = (double)rand() / RAND_MAX - 0.5;
                     particle_pos[i] = v3(rng_1 * params.lengthSimulationCube,
                                          rng_2 * params.lengthSimulationCube,
                                          rng_3 * params.lengthSimulationCube);
@@ -60,6 +61,61 @@ class Sim {
                             // values again if we change them
                 }
             }
+        }
+    }
+
+    void generate_direction() {
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            double rng_1 = (double)rand() / RAND_MAX - 0.5;
+            double rng_2 = (double)rand() / RAND_MAX - 0.5;
+            double rng_3 = (double)rand() / RAND_MAX - 0.5;
+
+            particle_direction.push_back(
+                v3(rng_1, rng_2, rng_3).get_direction());
+        }
+    }
+
+    void generate_h_field() {
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            double h_placeholder = 0.0;
+            particle_e_field.push_back(
+                v3(h_placeholder, h_placeholder, h_placeholder));
+        }
+    }
+
+    void generate_e_field() {
+        // TODO
+    }
+
+    void generate_vel() {
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            double vel_placeholder = 0.0;
+            particle_velocity.push_back(
+                v3(vel_placeholder, vel_placeholder, vel_placeholder));
+        }
+    }
+
+    void generate_direc_vel() {
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            double vel_direc_placeholder = 0.0;
+            particle_velocity.push_back(v3(vel_direc_placeholder,
+                                           vel_direc_placeholder,
+                                           vel_direc_placeholder));
+        }
+    }
+    void first_update_e_dipole() {
+        double prefactor = params.volumeParticle * EPSILON_0;
+        double chi_diff = params.chiEffShortAxisC - params.chiEffLongAxesAB;
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            v3 left_term = params.chiEffLongAxesAB * particle_e_field[i];
+            v3 right_term = chi_diff *
+                            (particle_direction[i].dot(particle_e_field[i])) *
+                            particle_direction[i];
+            particle_e_dipol.push_back(
+                prefactor *
+                (left_term +
+                 right_term)); // this is the only line different (pushback
+                               // instead of [i]) from update_e_dipole function
         }
     }
 
@@ -105,7 +161,7 @@ class Sim {
                              (r_ji_hat * (particle_e_dipol[j].dot(r_ji_hat))) -
                          particle_e_dipol[j]);
             }
-            particle_e_field[i] = this_e_field; // update the list
+            particle_e_field[i] = this_e_field;
         }
     }
 
@@ -205,8 +261,8 @@ class Sim {
                 max_value = norm_velocity;
             }
         }
-        double delta_t = params.corrFactorVelocity * params.eqRadius /
-                         max_value; // potential problems with 0 x x
+        double delta_t =
+            params.corrFactorVelocity * params.eqRadius / max_value;
 
         return delta_t;
     };
