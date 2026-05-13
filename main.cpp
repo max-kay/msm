@@ -21,36 +21,63 @@ class Sim {
         // todo
     }
 
-    double find_delta_t() {
-        double max_value = 0.0;
-        for (auto elem : particle_velocity) {
-            double norm_velocity = elem.get_length();
-
-            if (norm_velocity > max_value) {
-                max_value = norm_velocity;
-            }
-        }
-        double delta_t =
-            params.corrFactorVelocity * params.dragRadius / max_value;
-
-        return delta_t;
-    };
-
-    void update_position(double delta_t) {
+    void update_h_field() { // check math pls otherwise analogous to
+                            // update_e_field function
         for (int i = 0; i < params.numberOfParticles; i++) {
-            particle_pos[i] =
-                (particle_pos[i] + particle_velocity[i] * delta_t) %
-                params.lengthSimulationCube;
+            v3 this_h_field = v3(0, 0, 0);
+            double prefactor = params.magMomentDensityParticle *
+                               params.volumeParticle / (4 * M_PI);
+            for (int j = 0; j < params.numberOfParticles; i++) {
+                if (j == i) {
+                    continue;
+                }
+                v3 r_ji_h = (particle_pos[i] - particle_pos[j]) %
+                            params.lengthSimulationCube;
+                v3 r_ji_h_hat = r_ji_h.get_direction();
+                this_h_field =
+                    this_h_field +
+                    prefactor * (1 / pow(r_ji_h.get_length(), 3)) *
+                        (3 * (particle_direction[j].dot(r_ji_h_hat)) *
+                             r_ji_h_hat -
+                         particle_direction[j]);
+            }
+            particle_h_field[i] = this_h_field;
         }
     }
 
-    void update_direction(double delta_t) {
+    void update_e_field() {
+        double prefactor =
+            1 / (4 * M_PI * params.relPermittivityMatrix * EPSILON_0);
+
         for (int i = 0; i < params.numberOfParticles; i++) {
-            particle_direction[i] =
-                particle_direction[i] +
-                delta_t *
-                    particle_direction_velocity[i]; // periodic BC are not
-                                                    // required here right?
+            v3 this_e_field = v3(0, 0, 0);
+            for (int j = 0; j < params.numberOfParticles; j++) {
+                if (j == i) {
+                    continue;
+                }
+                v3 r_ji = (particle_pos[i] - particle_pos[j]) %
+                          params.lengthSimulationCube; // distance with PBC
+                v3 r_ji_hat = r_ji.get_direction();
+                this_e_field =
+                    this_e_field +
+                    (prefactor / (pow(r_ji.get_length(), 3))) *
+                        (3.0 * (r_ji_hat *
+                                (particle_direction[j].dot(r_ji_hat))) -
+                         particle_direction[j]);
+            }
+            particle_e_field[i] = this_e_field; // update the list
+        }
+    }
+
+    void update_e_dipole() {
+        double prefactor = params.volumeParticle * EPSILON_0;
+        double chi_diff = params.chiEffShortAxisC - params.chiEffLongAxesAB;
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            v3 left_term = params.chiEffLongAxesAB * particle_e_field[i];
+            v3 right_term = chi_diff *
+                            (particle_direction[i].dot(particle_e_field[i])) *
+                            particle_direction[i];
+            particle_e_dipol[i] = prefactor * (left_term + right_term);
         }
     }
 
@@ -89,6 +116,7 @@ class Sim {
                           particle_direction[j]) +
                          (r_ji_hat.dot(particle_direction[j]) *
                           particle_direction[i]));
+
                 this_e_force =
                     this_e_force +
                     e_prefactor / pow(r_ji.get_length(), 4) *
@@ -100,6 +128,7 @@ class Sim {
                            particle_e_dipol[j]) +
                           (r_ji_hat.dot(particle_e_dipol[j])) *
                               particle_e_dipol[i]));
+
                 this_r_force =
                     this_r_force +
                     r_prefactor *
@@ -135,61 +164,36 @@ class Sim {
         }
     }
 
-    void update_e_field() {
-        double prefactor =
-            1 / (4 * M_PI * params.relPermittivityMatrix * EPSILON_0);
+    double find_delta_t() {
+        double max_value = 0.0;
+        for (auto elem : particle_velocity) {
+            double norm_velocity = elem.get_length();
 
-        for (int i = 0; i < params.numberOfParticles; i++) {
-            v3 this_e_field = v3(0, 0, 0);
-            for (int j = 0; j < params.numberOfParticles; j++) {
-                if (j == i) {
-                    continue;
-                }
-                v3 r_ji = (particle_pos[i] - particle_pos[j]) %
-                          params.lengthSimulationCube; // distance with PBC
-                v3 r_ji_hat = r_ji.get_direction();
-                this_e_field =
-                    this_e_field +
-                    (prefactor / (pow(r_ji.get_length(), 3))) *
-                        (3.0 * (r_ji_hat *
-                                (particle_direction[j].dot(r_ji_hat))) -
-                         particle_direction[j]);
+            if (norm_velocity > max_value) {
+                max_value = norm_velocity;
             }
-            particle_e_field[i] = this_e_field; // update the list
+        }
+        double delta_t =
+            params.corrFactorVelocity * params.dragRadius / max_value;
+
+        return delta_t;
+    };
+
+    void update_position(double delta_t) {
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            particle_pos[i] =
+                (particle_pos[i] + particle_velocity[i] * delta_t) %
+                params.lengthSimulationCube;
         }
     }
-    void update_h_field() { // check math pls otherwise analogous to
-                            // update_e_field function
+
+    void update_direction(double delta_t) {
         for (int i = 0; i < params.numberOfParticles; i++) {
-            v3 this_h_field = v3(0, 0, 0);
-            double prefactor = params.magMomentDensityParticle *
-                               params.volumeParticle / (4 * M_PI);
-            for (int j = 0; j < params.numberOfParticles; i++) {
-                if (j == i) {
-                    continue;
-                }
-                v3 r_ji_h = (particle_pos[i] - particle_pos[j]) %
-                            params.lengthSimulationCube;
-                v3 r_ji_h_hat = r_ji_h.get_direction();
-                this_h_field =
-                    this_h_field +
-                    prefactor * (1 / pow(r_ji_h.get_length(), 3)) *
-                        (3 * (particle_direction[j].dot(r_ji_h_hat)) *
-                             r_ji_h_hat -
-                         particle_direction[j]);
-            }
-            particle_h_field[i] = this_h_field;
-        }
-    }
-    void update_e_dipole() {
-        double prefactor = params.volumeParticle * EPSILON_0;
-        double chi_diff = params.chiEffShortAxisC - params.chiEffLongAxesAB;
-        for (int i = 0; i < params.numberOfParticles; i++) {
-            v3 left_term = params.chiEffLongAxesAB * particle_e_field[i];
-            v3 right_term = chi_diff *
-                            (particle_direction[i].dot(particle_e_field[i])) *
-                            particle_direction[i];
-            particle_e_dipol[i] = prefactor * (left_term + right_term);
+            particle_direction[i] =
+                particle_direction[i] +
+                delta_t *
+                    particle_direction_velocity[i]; // periodic BC are not
+                                                    // required here right?
         }
     }
 };
