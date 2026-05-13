@@ -35,6 +35,7 @@ class Sim {
 
         return delta_t;
     };
+
     void update_position(double delta_t) {
         for (int i = 0; i < params.numberOfParticles; i++) {
             particle_pos[i] =
@@ -77,7 +78,7 @@ class Sim {
                 v3 r_ji = (particle_pos[i] - particle_pos[j]) %
                           params.lengthSimulationCube; // distance with PBC
                 v3 r_ji_hat = r_ji.get_direction();
-                this_h_force = // chekc the beackets
+                this_h_force =
                     this_h_force +
                     h_prefactor * (1 / pow(r_ji.get_length(), 4)) *
                         ((((particle_direction[j].dot(particle_direction[i])) -
@@ -105,13 +106,13 @@ class Sim {
                         exp(-params.corrFactorRepulsiveForce *
                             ((r_ji.get_length() / 2 * R_radius) - 1)) *
                         r_ji_hat;
-            } // second for
+            }
             particle_velocity[i] =
                 1 / params.dragCoeffTransl *
                 (this_e_force + this_h_force +
                  this_r_force); // not adding to it is correcft right?
-        } // first for
-    } // entire func
+        }
+    }
 
     void update_direc_velocity() {
         double h_prefactor =
@@ -131,25 +132,23 @@ class Sim {
                              (particle_e_field[i].dot(particle_direction[i]))));
             particle_direction_velocity[i] =
                 1 / params.dragCoeffRot * (h_cross_d + e_cross_d);
-        } // for loop
-    } // entire func
+        }
+    }
 
     void update_e_field() {
         double prefactor =
             1 / (4 * M_PI * params.relPermittivityMatrix * EPSILON_0);
 
         for (int i = 0; i < params.numberOfParticles; i++) {
-            // these are here to calculate the distance from our i-th
-            // particle to the j-th particle
             v3 this_e_field = v3(0, 0, 0);
             for (int j = 0; j < params.numberOfParticles; j++) {
                 if (j == i) {
                     continue;
-                } // dont devide by 0
+                }
                 v3 r_ji = (particle_pos[i] - particle_pos[j]) %
                           params.lengthSimulationCube; // distance with PBC
                 v3 r_ji_hat = r_ji.get_direction();
-                this_e_field = // calculate the electric field of the particle
+                this_e_field =
                     this_e_field +
                     (prefactor / (pow(r_ji.get_length(), 3))) *
                         (3.0 * (r_ji_hat *
@@ -182,10 +181,10 @@ class Sim {
             particle_h_field[i] = this_h_field;
         }
     }
-    void update_el_dipole() { // pls check
+    void update_e_dipole() {
         double prefactor = params.volumeParticle * EPSILON_0;
         double chi_diff = params.chiEffShortAxisC - params.chiEffLongAxesAB;
-        for (int i; i < params.numberOfParticles; i++) {
+        for (int i = 0; i < params.numberOfParticles; i++) {
             v3 left_term = params.chiEffLongAxesAB * particle_e_field[i];
             v3 right_term = chi_diff *
                             (particle_direction[i].dot(particle_e_field[i])) *
