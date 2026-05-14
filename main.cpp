@@ -24,8 +24,15 @@ class Sim {
     vector<v3> particle_direction;
     vector<v3> particle_direction_velocity;
 
-    Sim(SimulationParameters params) : params(params) {
+    Sim(SimulationParameters params) : params(params) { //check order pls and if everything is here
         generate_positions();
+        generate_direction();
+        generate_e_field();
+        generate_h_field();
+        generate_direc_vel();
+        generate_vel();
+        first_update_e_dipole();
+
         // TODO:
         // Generate random position in the simulation cube, make sure they dont
         // overlap using eqRadius. -- DONE
@@ -64,59 +71,39 @@ class Sim {
         }
     }
 
-    void generate_direction() {
+    void generate_direction() { // pls check if you find same math just to be safe
         for (int i = 0; i < params.numberOfParticles; i++) {
-            double rng_1 = (double)rand() / RAND_MAX - 0.5;
-            double rng_2 = (double)rand() / RAND_MAX - 0.5;
-            double rng_3 = (double)rand() / RAND_MAX - 0.5;
-
-            particle_direction.push_back(
-                v3(rng_1, rng_2, rng_3).get_direction());
+            double z =
+                2.0 * ((double)rand() / RAND_MAX) - 1.0; // random form -1 to 1
+            double phi =
+                2.0 * M_PI * ((double)rand() / RAND_MAX); // random 0 to 2pi
+            double r = sqrt(1.0 - z * z);
+            double x = r * cos(phi);
+            double y = r * sin(phi);
+            particle_direction.push_back(v3(x, y, z));
         }
     }
 
-    void generate_h_field() {
-        for (int i = 0; i < params.numberOfParticles; i++) {
-            double h_placeholder = 0.0;
-            particle_e_field.push_back(
-                v3(h_placeholder, h_placeholder, h_placeholder));
-        }
+    void generate_h_field() {// i think this works
+        particle_h_field.resize(params.numberOfParticles, v3(0.0, 0.0, 0.0));
     }
 
     void generate_e_field() {
         // TODO
     }
 
-    void generate_vel() {
-        for (int i = 0; i < params.numberOfParticles; i++) {
-            double vel_placeholder = 0.0;
-            particle_velocity.push_back(
-                v3(vel_placeholder, vel_placeholder, vel_placeholder));
-        }
+    void generate_vel() { 
+        particle_velocity.resize(params.numberOfParticles, v3(0.0, 0.0, 0.0));
     }
 
     void generate_direc_vel() {
-        for (int i = 0; i < params.numberOfParticles; i++) {
-            double vel_direc_placeholder = 0.0;
-            particle_velocity.push_back(v3(vel_direc_placeholder,
-                                           vel_direc_placeholder,
-                                           vel_direc_placeholder));
-        }
+        particle_direction_velocity.resize(params.numberOfParticles,
+                                           v3(0.0, 0.0, 0.0));
     }
+
     void first_update_e_dipole() {
-        double prefactor = params.volumeParticle * EPSILON_0;
-        double chi_diff = params.chiEffShortAxisC - params.chiEffLongAxesAB;
-        for (int i = 0; i < params.numberOfParticles; i++) {
-            v3 left_term = params.chiEffLongAxesAB * particle_e_field[i];
-            v3 right_term = chi_diff *
-                            (particle_direction[i].dot(particle_e_field[i])) *
-                            particle_direction[i];
-            particle_e_dipol.push_back(
-                prefactor *
-                (left_term +
-                 right_term)); // this is the only line different (pushback
-                               // instead of [i]) from update_e_dipole function
-        }
+        particle_e_dipol.resize(params.numberOfParticles, v3(0.0, 0.0, 0.0));
+        update_e_dipole();
     }
 
     void update_h_field() {
@@ -301,7 +288,9 @@ class Sim {
         return delta_t;
     }
 
-    void run_simulation() {
+    void
+    run_simulation() { // should we also log the step amount and the
+                       // corresponding time bc they are not equally spaced?
         double current_time = 0.0;
         while (current_time < params.simulationTime) {
             current_time += take_step();
