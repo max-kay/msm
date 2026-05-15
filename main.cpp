@@ -310,6 +310,21 @@ class Sim {
         return delta_t;
     }
 
+    void log_pos_and_dir(string &output_path, int num) {
+        std::ostringstream ss;
+        ss.str("");
+        ss.clear();
+        ss << output_path << "/" << std::setfill('0') << std::setw(6) << num
+           << "_pos.npy";
+        write_numpy_file(particle_pos, ss.str());
+
+        ss.str("");
+        ss.clear();
+        ss << output_path << "/" << std::setfill('0') << std::setw(6) << num
+           << "_dir.npy";
+        write_numpy_file(particle_direction, ss.str());
+    }
+
     void
     run_simulation() { // should we also log the step amount and the
                        // corresponding time bc they are not equally spaced?
@@ -322,26 +337,22 @@ class Sim {
         int num_frames = 15;
         int log_iter = 0;
         double current_time = 0.0;
-        stringstream ss;
         while (current_time < params.simulationTime) {
-            cout << "\r" << current_time << "/" << params.simulationTime
-                 << "   " << iteration << flush;
-            current_time += take_step();
+            cout << "\r" << std::fixed << std::setprecision(6) << current_time
+                 << " / " << params.simulationTime
+                 << " s | Iteration: " << std::setfill(' ') << std::setw(8)
+                 << iteration << flush;
+
             if ((double)log_iter * params.simulationTime / (double)num_frames <
                 current_time) {
-
-                ss.clear();
-                ss << output_path << "/" << iteration << "_pos.npy";
-                write_numpy_file(particle_pos, ss.str());
-
-                ss.clear();
-                ss << output_path << "/" << iteration << "_dir.npy";
-                write_numpy_file(particle_direction, ss.str());
-
+                log_pos_and_dir(output_path, log_iter);
                 log_iter++;
             }
+            current_time += take_step();
             iteration++;
         }
+        // output the final state irrespective of the state of the simulation
+        log_pos_and_dir(output_path, log_iter);
         auto end = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double> diff = end - start;
