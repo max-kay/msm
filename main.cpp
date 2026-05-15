@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <filesystem>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <random>
@@ -325,6 +326,52 @@ class Sim {
         write_numpy_file(particle_direction, ss.str());
     }
 
+    void save_params_to_json(const std::string &path, int num_frames) {
+        std::ofstream f(path);
+        if (!f.is_open()) {
+            std::cerr << "Failed to open " << path << " for writing params."
+                      << std::endl;
+            return;
+        }
+
+        f << "{\n";
+        f << "  \"numberOfParticles\": " << params.numberOfParticles << ",\n";
+        f << "  \"simulationTime\": " << params.simulationTime << ",\n";
+        f << "  \"num_frames\": " << num_frames << ",\n";
+        f << "  \"volumeFraction\": " << params.volumeFraction << ",\n";
+        f << "  \"viscosity\": " << params.viscosity << ",\n";
+        f << "  \"lengthSimulationCube\": " << params.lengthSimulationCube << ",\n";
+        f << "  \"volumeParticle\": " << params.volumeParticle << ",\n";
+        f << "  \"eqRadius\": " << params.eqRadius << ",\n";
+        f << "  \"longSemiaxesAB\": " << params.longSemiaxesAB << ",\n";
+        f << "  \"shortSemiaxisC\": "
+          << params.longSemiaxesAB / params.aspectRatioParticle << ",\n";
+        f << "  \"dragCoeffTransl\": " << params.dragCoeffTransl << ",\n";
+        f << "  \"dragCoeffRot\": " << params.dragCoeffRot << ",\n";
+        f << "  \"chiEffLongAxesAB\": " << params.chiEffLongAxesAB << ",\n";
+        f << "  \"chiEffShortAxisC\": " << params.chiEffShortAxisC << ",\n";
+        f << "  \"totalMagDipoleMomentParticle\": "
+          << params.totalMagDipoleMomentParticle << ",\n";
+        f << "  \"externalMagneticField\": [" << params.externalMagneticField.x
+          << ", " << params.externalMagneticField.y << ", "
+          << params.externalMagneticField.z << "],\n";
+        f << "  \"externalElectricField\": [" << params.externalElectricField.x
+          << ", " << params.externalElectricField.y << ", "
+          << params.externalElectricField.z << "],\n";
+        f << "  \"magMomentDensityParticle\": "
+          << params.magMomentDensityParticle << ",\n";
+        f << "  \"aspectRatioParticle\": " << params.aspectRatioParticle << ",\n";
+        f << "  \"longSemiaxesAB\": " << params.longSemiaxesAB << ",\n";
+        f << "  \"relPermittivityParticle\": " << params.relPermittivityParticle
+          << ",\n";
+        f << "  \"relPermittivityMatrix\": " << params.relPermittivityMatrix << ",\n";
+        f << "  \"corrFactorRepulsiveForce\": "
+          << params.corrFactorRepulsiveForce << ",\n";
+        f << "  \"corrFactorVelocity\": " << params.corrFactorVelocity << "\n";
+        f << "}" << std::endl;
+        f.close();
+    }
+
     void
     run_simulation() { // should we also log the step amount and the
                        // corresponding time bc they are not equally spaced?
@@ -333,8 +380,11 @@ class Sim {
 
         std::string output_path = create_output_directory();
         cout << "Output: " << output_path << endl;
-        int iteration = 0;
+
         int num_frames = 15;
+        save_params_to_json(output_path + "/params.json", num_frames);
+
+        int iteration = 0;
         int log_iter = 0;
         double current_time = 0.0;
         while (current_time < params.simulationTime) {
