@@ -21,16 +21,16 @@ struct SimulationParameters {
 
     // Experiment Parameters
     int numberOfParticles = 100;
-    double simulationTime = 1000; // ms
+    double simulationTime = 1000e-3; // s
     double volumeFraction = 0.01; // 1.0 = 100%
     double viscosity = 3.5;       // Pa*s
-    double magnitudeMagFieldExternal = 1900000;
+    double magnitudeMagFieldExternal = 5* magMomentDensityParticle; //potenteial bug
     double magnitudeElFieldExternal = 100e6;
 
     // Particle/Matrix Parameters
     double magMomentDensityParticle = 380000; // can kill
     double aspectRatioParticle = 7.0 / 2;     // Width/Height
-    double longSemiaxesAB = 2.5;              // um
+    double longSemiaxesAB = 2.5e-6;              // m
     // double shortSemiaxisC;
     //   v3 orientationParticle;
     double relPermittivityParticle = 10; // can kill?
