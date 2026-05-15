@@ -89,7 +89,8 @@ class Sim {
     }
 
     void generate_h_field() {
-        particle_h_field.resize(params.numberOfParticles, params.externalMagneticField);
+        particle_h_field.resize(params.numberOfParticles,
+                                params.externalMagneticField);
     }
 
     void generate_e_field() {
@@ -114,7 +115,7 @@ class Sim {
   public:
     void update_h_field() {
         for (int i = 0; i < params.numberOfParticles; i++) {
-            v3 this_h_field = params.externalMagneticField; // 
+            v3 this_h_field = params.externalMagneticField; //
             double prefactor = params.totalMagDipoleMomentParticle / (4 * M_PI);
             for (int j = 0; j < params.numberOfParticles; j++) {
                 if (j == i) {

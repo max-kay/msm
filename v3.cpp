@@ -1,16 +1,22 @@
 #include <cmath>
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 using namespace std;
 
 class v3 {
   public:
     // member variables
     double x, y, z;
+
+    v3() {
+        x = 0;
+        y = 0;
+        z = 0;
+    }
 
     // constructor
     v3(double x, double y, double z) : x(x), y(y), z(z) {}
