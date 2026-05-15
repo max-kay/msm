@@ -24,7 +24,8 @@ class Sim {
     vector<v3> particle_direction;
     vector<v3> particle_direction_velocity;
 
-    Sim(SimulationParameters params) : params(params) { //check order pls and if everything is here
+    Sim(SimulationParameters params)
+        : params(params) { // check order pls and if everything is here
         generate_positions();
         generate_direction();
         generate_e_field();
@@ -42,6 +43,8 @@ class Sim {
         // update the electric dipole once fill both velocities with
         // 0 vectors -- DONE
     }
+
+  private:
     void generate_positions() {
         srand(time(nullptr)); // seed the generator
         for (int i = 0; i < params.numberOfParticles; i++) {
@@ -71,7 +74,8 @@ class Sim {
         }
     }
 
-    void generate_direction() { // pls check if you find same math just to be safe
+    void
+    generate_direction() { // pls check if you find same math just to be safe
         for (int i = 0; i < params.numberOfParticles; i++) {
             double z =
                 2.0 * ((double)rand() / RAND_MAX) - 1.0; // random form -1 to 1
@@ -84,15 +88,16 @@ class Sim {
         }
     }
 
-    void generate_h_field() {// i think this works
-        particle_h_field.resize(params.numberOfParticles, v3(0.0, 0.0, 0.0));
+    void generate_h_field() {
+        particle_h_field.resize(params.numberOfParticles, params.externalMagneticField);
     }
 
     void generate_e_field() {
-        // TODO
+        particle_e_field.resize(params.numberOfParticles,
+                                params.externalElectricField);
     }
 
-    void generate_vel() { 
+    void generate_vel() {
         particle_velocity.resize(params.numberOfParticles, v3(0.0, 0.0, 0.0));
     }
 
@@ -106,9 +111,10 @@ class Sim {
         update_e_dipole();
     }
 
+  public:
     void update_h_field() {
         for (int i = 0; i < params.numberOfParticles; i++) {
-            v3 this_h_field = v3(0, 0, 0);
+            v3 this_h_field = params.externalMagneticField; // 
             double prefactor = params.totalMagDipoleMomentParticle / (4 * M_PI);
             for (int j = 0; j < params.numberOfParticles; j++) {
                 if (j == i) {
@@ -133,7 +139,7 @@ class Sim {
             1 / (4 * M_PI * params.relPermittivityMatrix * EPSILON_0);
 
         for (int i = 0; i < params.numberOfParticles; i++) {
-            v3 this_e_field = v3(0, 0, 0);
+            v3 this_e_field = params.externalElectricField;
             for (int j = 0; j < params.numberOfParticles; j++) {
                 if (j == i) {
                     continue;
@@ -300,6 +306,7 @@ class Sim {
 
 int main() {
     SimBuilder builder;
+    builder.set_viscosity(1);
     SimulationParameters params = builder.build();
 
     Sim simulation(params);

@@ -18,19 +18,12 @@ struct SimulationParameters {
     double chiEffShapeAnisotropyFactor; // can kill
     double totalMagDipoleMomentParticle;
     double lengthSimulationCube;
-
-    // Experiment Parameters
-    int numberOfParticles = 100;
-    double simulationTime = 1000e-3; // s
-    double volumeFraction = 0.01; // 1.0 = 100%
-    double viscosity = 3.5;       // Pa*s
-    double magnitudeMagFieldExternal = 5* magMomentDensityParticle; //potenteial bug
-    double magnitudeElFieldExternal = 100e6;
-
+    v3 externalMagneticField;
+    v3 externalElectricField;
     // Particle/Matrix Parameters
     double magMomentDensityParticle = 380000; // can kill
     double aspectRatioParticle = 7.0 / 2;     // Width/Height
-    double longSemiaxesAB = 2.5e-6;              // m
+    double longSemiaxesAB = 2.5e-6;           // m
     // double shortSemiaxisC;
     //   v3 orientationParticle;
     double relPermittivityParticle = 10; // can kill?
@@ -39,6 +32,16 @@ struct SimulationParameters {
     // Correction Factors
     double corrFactorRepulsiveForce = 40;
     double corrFactorVelocity = 1.0 / 3;
+
+    // Experiment Parameters
+    int numberOfParticles = 100;
+    double simulationTime = 1000e-3; // s
+    double volumeFraction = 0.01;    // 1.0 = 100%
+    double viscosity = 3.5;          // Pa*s
+    double magnitudeMagFieldExternal = 5 * magMomentDensityParticle;
+    v3 directionMagFieldExternal = v3(0, 0, 1);
+    double magnitudeElFieldExternal = 100e6;
+    v3 directionElFieldExternal = v3(0, 1, 0);
 };
 
 class SimBuilder {
@@ -153,6 +156,12 @@ class SimBuilder {
         parameters.lengthSimulationCube =
             std::cbrt(parameters.numberOfParticles * parameters.volumeParticle /
                       parameters.volumeFraction);
+
+        parameters.externalElectricField = (parameters.directionElFieldExternal *
+                                           parameters.magnitudeElFieldExternal);
+        parameters.externalMagneticField =
+            parameters.magnitudeMagFieldExternal *
+            parameters.directionMagFieldExternal;
 
         return parameters;
     }
