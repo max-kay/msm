@@ -13,6 +13,8 @@ build/
 bin/
 
 main
+main.dsym
+out/
 
 # VS Code
 .vscode/

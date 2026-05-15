@@ -49,7 +49,11 @@ class v3 {
     double get_length() {
         return double(std::sqrt(x * x + y * y + z * z));
     } // Euclidian Norm
-    v3 get_direction() { return *this / (*this).get_length(); } // Normalize
+
+    v3 get_direction() {
+        double k = 1 / std::sqrt(x * x + y * y + z * z);
+        return v3(x * k, y * k, z * k);
+    } // Normalize
     v3 operator%(const double &size) // Return to Central Probing Volume
     {
         x -= std::round(x / size) * size;

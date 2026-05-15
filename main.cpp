@@ -2,8 +2,12 @@
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
+#include <filesystem>
+#include <iomanip>
 #include <iostream>
 #include <random>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #define EL_CONVERGE_ITERATIONS 4
@@ -11,6 +15,17 @@
 #define MU_0 (double)1.25663706127e-6
 
 using namespace std;
+
+std::string create_output_directory() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t in_time_t = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << "out/"
+       << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%H-%M-%S");
+    std::string path = ss.str();
+    std::filesystem::create_directories(path);
+    return path;
+}
 
 class Sim {
   public:
@@ -298,29 +313,52 @@ class Sim {
     void
     run_simulation() { // should we also log the step amount and the
                        // corresponding time bc they are not equally spaced?
+        std::cout << "Starting simulation..." << std::endl;
+        auto start = std::chrono::high_resolution_clock::now();
+
+        std::string output_path = create_output_directory();
+        cout << "Output: " << output_path << endl;
+        int iteration = 0;
+        int num_frames = 15;
+        int log_iter = 0;
         double current_time = 0.0;
+        stringstream ss;
         while (current_time < params.simulationTime) {
+            cout << "\r" << current_time << "/" << params.simulationTime
+                 << "   " << iteration << flush;
             current_time += take_step();
+            if ((double)log_iter * params.simulationTime / (double)num_frames <
+                current_time) {
+
+                ss.clear();
+                ss << output_path << "/" << iteration << "_pos.npy";
+                write_numpy_file(particle_pos, ss.str());
+
+                ss.clear();
+                ss << output_path << "/" << iteration << "_dir.npy";
+                write_numpy_file(particle_direction, ss.str());
+
+                log_iter++;
+            }
+            iteration++;
         }
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> diff = end - start;
+
+        std::cout << "\nSimulation finished." << std::endl;
+        std::cout << "Time taken: " << diff.count() << " seconds" << std::endl;
     }
 };
 
 int main() {
     SimBuilder builder;
-    builder.set_viscosity(1);
+    builder.set_duration(0.02);
     SimulationParameters params = builder.build();
 
     Sim simulation(params);
-    std::cout << "Starting simulation..." << std::endl;
 
-    auto start = std::chrono::high_resolution_clock::now();
     simulation.run_simulation();
-    auto end = std::chrono::high_resolution_clock::now();
-
-    std::chrono::duration<double> diff = end - start;
-
-    std::cout << "Simulation finished." << std::endl;
-    std::cout << "Time taken: " << diff.count() << " seconds" << std::endl;
 
     return 0;
 }
