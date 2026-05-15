@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#define EL_CONVERGE_ITERATIONS 4
+#define EL_CONVERGE_ITERATIONS 2
 #define EPSILON_0 (double)8.8541878188e-12
 #define MU_0 (double)1.25663706127e-6
 
@@ -196,49 +196,50 @@ class Sim {
                              pow(params.totalMagDipoleMomentParticle, 2) /
                              (2 * M_PI * pow(2 * params.eqRadius, 4));
         for (int i = 0; i < params.numberOfParticles; i++) {
-            v3 this_h_force = v3(0, 0, 0);
-            v3 this_e_force = v3(0, 0, 0);
-            v3 this_r_force = v3(0, 0, 0);
-            for (int j = 0; j < params.numberOfParticles; j++) {
-                if (j == i) {
-                    continue;
-                }
+            particle_velocity[i] = v3(0.0, 0.0, 0.0);
+        }
+
+        for (int i = 0; i < params.numberOfParticles; i++) {
+            for (int j = i + 1; j < params.numberOfParticles; j++) {
                 v3 r_ji = (particle_pos[i] - particle_pos[j]) %
                           params.lengthSimulationCube; // distance with PBC
                 v3 r_ji_hat = r_ji.get_direction();
-                this_h_force =
-                    this_h_force +
+                v3 this_h_force =
                     h_prefactor * (1 / pow(r_ji.get_length(), 4)) *
-                        ((((particle_direction[j].dot(particle_direction[i])) -
-                           5 * (r_ji_hat.dot(particle_direction[j])) *
-                               (r_ji_hat.dot(particle_direction[i]))) *
-                          r_ji_hat) +
-                         ((r_ji_hat.dot(particle_direction[i])) *
-                          particle_direction[j]) +
-                         (r_ji_hat.dot(particle_direction[j]) *
-                          particle_direction[i]));
+                    ((((particle_direction[j].dot(particle_direction[i])) -
+                       5 * (r_ji_hat.dot(particle_direction[j])) *
+                           (r_ji_hat.dot(particle_direction[i]))) *
+                      r_ji_hat) +
+                     ((r_ji_hat.dot(particle_direction[i])) *
+                      particle_direction[j]) +
+                     (r_ji_hat.dot(particle_direction[j]) *
+                      particle_direction[i]));
 
-                this_e_force =
-                    this_e_force +
+                v3 this_e_force =
                     e_prefactor / pow(r_ji.get_length(), 4) *
-                        ((((particle_e_dipol[j].dot(particle_e_dipol[i])) -
-                           5 * (r_ji_hat.dot(particle_e_dipol[j])) *
-                               (r_ji_hat.dot(particle_e_dipol[i]))) *
-                          r_ji_hat) +
-                         (((r_ji_hat.dot(particle_e_dipol[i])) *
-                           particle_e_dipol[j]) +
-                          (r_ji_hat.dot(particle_e_dipol[j])) *
-                              particle_e_dipol[i]));
+                    ((((particle_e_dipol[j].dot(particle_e_dipol[i])) -
+                       5 * (r_ji_hat.dot(particle_e_dipol[j])) *
+                           (r_ji_hat.dot(particle_e_dipol[i]))) *
+                      r_ji_hat) +
+                     (((r_ji_hat.dot(particle_e_dipol[i])) *
+                       particle_e_dipol[j]) +
+                      (r_ji_hat.dot(particle_e_dipol[j])) *
+                          particle_e_dipol[i]));
 
-                this_r_force =
-                    this_r_force +
+                v3 this_r_force =
                     r_prefactor *
-                        exp(-params.corrFactorRepulsiveForce *
-                            ((r_ji.get_length() / (2 * params.eqRadius)) - 1)) *
-                        r_ji_hat;
+                    exp(-params.corrFactorRepulsiveForce *
+                        ((r_ji.get_length() / (2 * params.eqRadius)) - 1)) *
+                    r_ji_hat;
+                particle_velocity[i] =
+                    particle_velocity[i] +
+                    1 / params.dragCoeffTransl *
+                        (this_e_force + this_h_force + this_r_force);
+                particle_velocity[j] =
+                    particle_velocity[j] -
+                    1 / params.dragCoeffTransl *
+                        (this_e_force + this_h_force + this_r_force);
             }
-            particle_velocity[i] = 1 / params.dragCoeffTransl *
-                                   (this_e_force + this_h_force + this_r_force);
         }
     }
 
@@ -340,7 +341,8 @@ class Sim {
         f << "  \"num_frames\": " << num_frames << ",\n";
         f << "  \"volumeFraction\": " << params.volumeFraction << ",\n";
         f << "  \"viscosity\": " << params.viscosity << ",\n";
-        f << "  \"lengthSimulationCube\": " << params.lengthSimulationCube << ",\n";
+        f << "  \"lengthSimulationCube\": " << params.lengthSimulationCube
+          << ",\n";
         f << "  \"volumeParticle\": " << params.volumeParticle << ",\n";
         f << "  \"eqRadius\": " << params.eqRadius << ",\n";
         f << "  \"longSemiaxesAB\": " << params.longSemiaxesAB << ",\n";
@@ -360,11 +362,13 @@ class Sim {
           << params.externalElectricField.z << "],\n";
         f << "  \"magMomentDensityParticle\": "
           << params.magMomentDensityParticle << ",\n";
-        f << "  \"aspectRatioParticle\": " << params.aspectRatioParticle << ",\n";
+        f << "  \"aspectRatioParticle\": " << params.aspectRatioParticle
+          << ",\n";
         f << "  \"longSemiaxesAB\": " << params.longSemiaxesAB << ",\n";
         f << "  \"relPermittivityParticle\": " << params.relPermittivityParticle
           << ",\n";
-        f << "  \"relPermittivityMatrix\": " << params.relPermittivityMatrix << ",\n";
+        f << "  \"relPermittivityMatrix\": " << params.relPermittivityMatrix
+          << ",\n";
         f << "  \"corrFactorRepulsiveForce\": "
           << params.corrFactorRepulsiveForce << ",\n";
         f << "  \"corrFactorVelocity\": " << params.corrFactorVelocity << "\n";
